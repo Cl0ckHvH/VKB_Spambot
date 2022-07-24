@@ -1,6 +1,6 @@
 {
   "name": "VKB_Spambot",
-  "description": "Spambot for VK on Python ",
+  "description": "Spambot for VK on Python",
   "repository": "https://github.com/Cl0ckHvH/VKB_Spambot",
   "logo": "https://images.cults3d.com/58uguREBPAeiVWNs1JzwdQ7X6-U=/516x516/https://files.cults3d.com/uploaders/13286949/illustration-file/ab7f7863-4a49-43a3-9f72-595d59b72e97/Spam-closed.jpg",
   "env": {
@@ -73,7 +73,6 @@
   "buildpacks": [
     {
       "url": "heroku/python"
-	  "stack": "heroku-22"
     }
   ],
   "formation": {
