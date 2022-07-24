@@ -47,4 +47,4 @@ pip install -r requirements.txt --upgrade
 
 ### Если у вас Windows 7
 
-Поддержка Python на Windows 7 прекратилась, начиная с версии 3.9, но всё таки нашёлся человек, который сделал поддержку Windows 7. Скачать можно [тут](https://github.com/NulAsh/cpython/releases/tag/v3.10.1win7-1)
+Поддержка Python на Windows 7 прекратилась, начиная с версии 3.9, но всё таки нашёлся человек, который сделал поддержку для Windows 7. Скачать можно [тут](https://github.com/NulAsh/cpython/releases/tag/v3.10.1win7-1)
