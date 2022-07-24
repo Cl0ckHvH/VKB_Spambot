@@ -72,7 +72,8 @@
   },
   "buildpacks": [
     {
-      "url": "heroku/python"
+      "url": "heroku/python",
+      "stack": "heroku-22"
     }
   ],
   "formation": {
