@@ -16,7 +16,7 @@ from vkbottle.exception_factory import VKAPIError
 from vkbottle.modules import logger
 
 with open("config.toml", "r", encoding="utf-8") as f:
-    if "message_text" in os.environ and "token" in os.environ:
+    if "token" in os.environ:
         config = dict(os.environ)
         for key, value in toml.load(f).items():
             if key not in config:
