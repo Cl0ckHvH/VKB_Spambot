@@ -13,7 +13,8 @@
 	  "value": "start"
 	},
 	"call_from_id": {
-	  "description": "ID человека, который будет вызывать бота"
+	  "description": "ID человека, который будет вызывать бота",
+	  "value": "666"
 	},
 	"text": {
 	  "description": "Текст сообщения",
