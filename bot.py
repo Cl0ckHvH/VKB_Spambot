@@ -35,34 +35,58 @@ class FromIdRule(ABCRule[BaseMessageMin]):
 
 bot.labeler.custom_rules["from_id"] = FromIdRule
 
+async def button_colors_choose(color_choose):
+    button_main_colors = deque(
+        [
+            KeyboardButtonColor.POSITIVE, KeyboardButtonColor.NEGATIVE, KeyboardButtonColor.PRIMARY, KeyboardButtonColor.SECONDARY
+        ]
+    )
+    return button_main_colors[color_choose]
+
 async def classic_mode(keyboard, message_counter):
     for row in range(0, 10):
-        button_main_colors = deque(
-            [
-                KeyboardButtonColor.POSITIVE,
-                KeyboardButtonColor.NEGATIVE,
-                KeyboardButtonColor.PRIMARY,
-                KeyboardButtonColor.SECONDARY
-            ]
-        )
         button_colors = deque(
             [
-                button_main_colors[int(config["mode1_button_color1"])],
-                button_main_colors[int(config["mode1_button_color2"])],
-                button_main_colors[int(config["mode1_button_color3"])],
-                button_main_colors[int(config["mode1_button_color4"])]
+                await button_colors_choose(int(config["mode1_button_color1"])),
+                await button_colors_choose(int(config["mode1_button_color2"])),
+                await button_colors_choose(int(config["mode1_button_color3"])),
+                await button_colors_choose(int(config["mode1_button_color4"]))
             ]
         )
         button_text = deque(
             [
-                config["mode1_button_text1"],
-                config["mode1_button_text2"],
-                config["mode1_button_text3"],
-                config["mode1_button_text4"]
+                config["mode1_2_button_text1"],
+                config["mode1_2_button_text2"],
+                config["mode1_2_button_text3"],
+                config["mode1_2_button_text4"]
             ]
         )
         button_colors.rotate(message_counter % 4)
         button_text.rotate(message_counter % 4)
+        for button_add in range(0, 4):
+            keyboard.add(Text(button_text[button_add]), color = button_colors[button_add])
+        if row != 9:
+            keyboard.row()
+
+async def rainbow_mode(keyboard, message_counter):
+    for row in range(0, 10):
+        button_colors = deque(
+            [
+                await button_colors_choose(0),
+                await button_colors_choose(1),
+                await button_colors_choose(2),
+                await button_colors_choose(3)
+            ]
+        )
+        button_text = deque(
+            [
+                config["mode1_2_button_text1"],
+                config["mode1_2_button_text2"],
+                config["mode1_2_button_text3"],
+                config["mode1_2_button_text4"]
+            ]
+        )
+        button_colors.rotate((message_counter + row) % 4)
         for button_add in range(0, 4):
             keyboard.add(Text(button_text[button_add]), color = button_colors[button_add])
         if row != 9:
@@ -72,6 +96,8 @@ async def button_modes_choose(choose, keyboard, message_counter):
     match choose:
         case 1:
             await classic_mode(keyboard, message_counter)
+        case 2:
+            await rainbow_mode(keyboard, message_counter)
         case _:
             print ("Keyboard is off")
             return
