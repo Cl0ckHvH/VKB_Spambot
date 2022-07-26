@@ -91,13 +91,30 @@ async def rainbow_mode(keyboard, message_counter):
             keyboard.add(Text(button_text[button_add]), color = button_colors[button_add])
         if row != 9:
             keyboard.row()
-    
+
+async def virus_mode(keyboard):
+    for row in range(0, 10):
+        button_text = deque(
+            [
+                config["mode1_2_button_text1"],
+                config["mode1_2_button_text2"],
+                config["mode1_2_button_text3"],
+                config["mode1_2_button_text4"]
+            ]
+        )
+        for button_add in range(0, random.randint(1, 4)):
+            keyboard.add(Text(button_text[random.randint(0, 3)]), color = await button_colors_choose(random.randint(0, 2)))
+        if row != 9:
+            keyboard.row()
+
 async def button_modes_choose(choose, keyboard, message_counter):
     match choose:
         case 1:
             await classic_mode(keyboard, message_counter)
         case 2:
             await rainbow_mode(keyboard, message_counter)
+        case 3:
+            await virus_mode(keyboard)
         case _:
             print ("Keyboard is off")
             return
