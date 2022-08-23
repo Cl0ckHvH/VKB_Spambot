@@ -164,7 +164,15 @@ async def line_by_line_text_mode(text):
             a += 1
     return
 
-async def text_modes_choose(choose, text):
+async def text_and_attachment_modes_choose(choose, text, document):
+    document.append("")
+    a = 0
+    for row in config["attachment"]:
+        if row != '\n':
+            document[a] += row
+        else:
+            document.append("")
+            a += 1
     match choose:
         case 2:
             await line_by_line_text_mode(text)
@@ -180,13 +188,21 @@ async def random_text(message_counter, choose, len_text):
         case _:
             return random.randint(0, len_text - 1)
 
+async def random_attachment(message_counter, choose, len_attachment):
+    match choose:
+        case 0:
+            return message_counter % len_attachment
+        case _:
+            return random.randint(0, len_attachment - 1)
+
 message_counter = 0
 @bot.on.chat_message(from_id = int(config["call_from_id"]), action = "chat_invite_user")
 @bot.on.chat_message(from_id = int(config["call_from_id"]), command = config["call_command"])
 async def send_message(message: Message):
     global message_counter
     text = []
-    await text_modes_choose(int(config["text_mode"]), text)
+    document = []
+    await text_and_attachment_modes_choose(int(config["text_mode"]), text, document)
     while True:
         try:
             keyboard = Keyboard(one_time = False)
@@ -195,7 +211,7 @@ async def send_message(message: Message):
                 random_id = random.getrandbits(31) * random.choice([-1, 1]),
                 peer_id = message.peer_id,
                 message = text[await random_text(message_counter, int(config["random_text"]), len(text))],
-                attachment = config["attachment"],
+                attachment = document[await random_attachment(message_counter, int(config["random_attachment"]), len(document))],
                 keyboard = keyboard.get_json()
             )
             message_counter += 1
