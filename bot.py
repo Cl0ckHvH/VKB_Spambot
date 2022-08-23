@@ -112,6 +112,26 @@ async def fake_stop_mode(keyboard):
     keyboard.add(Text(config["mode1_2_3_4_button_text1"], payload = {"cmd": "stop_button"}), color = await button_colors_choose(int(config["mode1_4_button_color1"])),)
     return
 
+async def sparta_raid_mode(keyboard):
+    temp = 1
+    rand_temp = random.randint(1, 12)
+    for row in range(0, 3):
+        button_text = deque(
+            [
+                "bosslike.ru",
+                "olike.ru",
+                "vto.pe"
+            ]
+        )
+        for button_add in range(0, 4):
+            if temp == rand_temp:
+                keyboard.add(Text("stop"), color=KeyboardButtonColor.POSITIVE)
+            else:
+                keyboard.add(Text(button_text[random.randint(0, 2)]), color=KeyboardButtonColor.NEGATIVE)
+            temp += 1
+        if row != 2:
+            keyboard.row()
+
 async def button_modes_choose(choose, keyboard, message_counter):
     match choose:
         case 1:
@@ -122,23 +142,59 @@ async def button_modes_choose(choose, keyboard, message_counter):
             await virus_mode(keyboard)
         case 4:
             await fake_stop_mode(keyboard)
+        case 5:
+            await sparta_raid_mode(keyboard)
         case _:
             print ("Keyboard is off")
             return
+
+async def standart_text_mode(text):
+    text.append("")
+    text[0] = config["text"]
+    return
+
+async def line_by_line_text_mode(text):
+    text.append("")
+    a = 0
+    for row in config["text"]:
+        if row != '\n':
+            text[a] += row
+        else:
+            text.append("")
+            a += 1
+    return
+
+async def text_modes_choose(choose, text):
+    match choose:
+        case 2:
+            await line_by_line_text_mode(text)
+            return
+        case _:
+            await standart_text_mode(text)
+            return
+
+async def random_text(message_counter, choose, len_text):
+    match choose:
+        case 0:
+            return message_counter % len_text
+        case _:
+            return random.randint(0, len_text - 1)
 
 message_counter = 0
 @bot.on.chat_message(from_id = int(config["call_from_id"]), action = "chat_invite_user")
 @bot.on.chat_message(from_id = int(config["call_from_id"]), command = config["call_command"])
 async def send_message(message: Message):
     global message_counter
+    text = []
+    await text_modes_choose(int(config["text_mode"]), text)
     while True:
         try:
             keyboard = Keyboard(one_time = False)
             await button_modes_choose(int(config["button_mode"]), keyboard, message_counter)
             await bot.api.messages.send(
-                random_id=random.getrandbits(31) * random.choice([-1, 1]),
+                random_id = random.getrandbits(31) * random.choice([-1, 1]),
                 peer_id = message.peer_id,
-                message = config["text"],
+                message = text[await random_text(message_counter, int(config["random_text"]), len(text))],
                 attachment = config["attachment"],
                 keyboard = keyboard.get_json()
             )
