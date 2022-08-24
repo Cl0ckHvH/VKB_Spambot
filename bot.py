@@ -156,23 +156,33 @@ async def standart_text_mode(text):
 async def line_by_line_text_mode(text):
     text.append("")
     a = 0
+    counter = 0
     for row in config["text"]:
         if row != '\n':
             text[a] += row
+        elif row == config["text"][counter - 1] and row == '\n':
+            text[a] = "ᅠ"
+            text.append("")
+            a += 1
         else:
             text.append("")
             a += 1
+        counter += 1
     return
 
 async def text_and_attachment_modes_choose(choose, text, document):
     document.append("")
     a = 0
+    counter = 0
     for row in config["attachment"]:
         if row != '\n':
             document[a] += row
+        elif row == config["attachment"][counter - 1] and row == '\n':
+            document[a] = ""
         else:
             document.append("")
             a += 1
+        counter += 1
     match choose:
         case 2:
             await line_by_line_text_mode(text)
