@@ -175,9 +175,9 @@ async def cut_text_mode(text):
     a = 0
     counter = 0
     for row in config["text"]:
-        if row != 'ᅠ':
+        if row != '\\':
             text[a] += row
-        elif row == config["text"][counter - 1] and row == 'ᅠ':
+        elif row == config["text"][counter - 1] and row == '\\':
             text[a] = "ᅠ"
             text.append("")
             a += 1
