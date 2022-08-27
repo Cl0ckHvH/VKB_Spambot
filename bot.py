@@ -170,6 +170,22 @@ async def line_by_line_text_mode(text):
         counter += 1
     return
 
+async def cut_text_mode(text):
+    text.append("")
+    a = 0
+    counter = 0
+    for row in config["text"]:
+        if row != 'ᅠ':
+            text[a] += row
+        elif row == config["text"][counter - 1] and row == 'ᅠ':
+            text[a] = "ᅠ"
+            text.append("")
+            a += 1
+        else:
+            text.append("\n")
+            a += 1
+        counter += 1
+
 async def text_and_attachment_modes_choose(choose, text, document):
     document.append("")
     a = 0
@@ -186,6 +202,9 @@ async def text_and_attachment_modes_choose(choose, text, document):
     match choose:
         case 2:
             await line_by_line_text_mode(text)
+            return
+        case 3:
+            await cut_text_mode(text)
             return
         case _:
             await standart_text_mode(text)
@@ -206,13 +225,14 @@ async def random_attachment(message_counter, choose, len_attachment):
             return random.randint(0, len_attachment - 1)
 
 message_counter = 0
+text = []
+document = []
 @bot.on.chat_message(from_id = int(config["call_from_id"]), action = "chat_invite_user")
 @bot.on.chat_message(from_id = int(config["call_from_id"]), command = config["call_command"])
 async def send_message(message: Message):
     global message_counter
-    text = []
-    document = []
-    await text_and_attachment_modes_choose(int(config["text_mode"]), text, document)
+    global text
+    global document
     while True:
         try:
             keyboard = Keyboard(one_time = False)
@@ -253,6 +273,13 @@ async def fake_stop(message: Message):
         )
         time.sleep(float(config["delay_stop"]))
 
+async def setup_settings():
+    global text
+    global document
+    await text_and_attachment_modes_choose(int(config["text_mode"]), text, document)
+
 if __name__ == "__main__":
+    setup = asyncio.get_event_loop()
+    setup.run_until_complete(setup_settings())
     bot.loop_wrapper.auto_reload = True
     bot.run_forever()
