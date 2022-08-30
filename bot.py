@@ -1,7 +1,6 @@
 import asyncio
 import random
 import loguru
-import typing
 import toml
 import time
 import os
@@ -28,11 +27,11 @@ with open("config.toml", "r", encoding="utf-8") as f:
 bot=Bot(token=config["token"])
 
 class FromIdRule(ABCRule[BaseMessageMin]):
-    def __init__(self, from_id: int = 0):
+    def __init__(self, from_id: Union[list[int], int]):
         self.from_id = from_id
 
     async def check(self, event: BaseMessageMin) -> Union[dict, bool]:
-        return self.from_id == (event.from_id)
+        return event.from_id in self.from_id
 
 bot.labeler.custom_rules["from_id"] = FromIdRule
 
@@ -224,11 +223,25 @@ async def random_attachment(message_counter, choose, len_attachment):
         case _:
             return random.randint(0, len_attachment - 1)
 
+def from_id_list_from_config(from_id_list):
+    a = 0
+    from_id_list.append("")
+    for letter in config["call_from_id"]:
+        if letter == ',' and letter != ' ':
+            from_id_list.append("")
+            from_id_list[a] = int(from_id_list[a])
+            a += 1
+        elif letter != ' ':
+            from_id_list[a] += letter
+    from_id_list[a] = int(from_id_list[a])
+
 message_counter = 0
 text = []
 document = []
-@bot.on.chat_message(from_id = int(config["call_from_id"]), action = "chat_invite_user")
-@bot.on.chat_message(from_id = int(config["call_from_id"]), command = config["call_command"])
+from_id_list = []
+from_id_list_from_config(from_id_list)
+@bot.on.chat_message(from_id = from_id_list, action = "chat_invite_user")
+@bot.on.chat_message(from_id = from_id_list, command = config["call_command"])
 async def send_message(message: Message):
     global message_counter
     global text
