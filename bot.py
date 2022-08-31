@@ -9,7 +9,7 @@ from typing import Union
 from loguru import logger
 
 from vkbottle import API, bot, Keyboard, KeyboardButtonColor, Text
-from vkbottle.bot import Bot, Message
+from vkbottle.bot import Bot, Message, run_multibot
 from vkbottle.dispatch.rules import ABCRule
 from vkbottle.tools.dev.mini_types.base import BaseMessageMin
 from vkbottle.exception_factory import VKAPIError
@@ -24,7 +24,7 @@ with open("config.toml", "r", encoding="utf-8") as f:
     else:
         config = toml.load(f)
 
-bot=Bot(token=config["token"])
+bot=Bot()
 
 class FromIdRule(ABCRule[BaseMessageMin]):
     def __init__(self, from_id: Union[list[int], int]):
@@ -156,10 +156,10 @@ async def line_by_line_text_mode(text):
     text.append("")
     a = 0
     counter = 0
-    for row in config["text"]:
-        if row != '\n':
-            text[a] += row
-        elif row == config["text"][counter - 1] and row == '\n':
+    for letter in config["text"]:
+        if letter != '\n':
+            text[a] += letter
+        elif letter == config["text"][counter - 1] and letter == '\n':
             text[a] = "ᅠ"
             text.append("")
             a += 1
@@ -173,10 +173,10 @@ async def cut_text_mode(text):
     text.append("")
     a = 0
     counter = 0
-    for row in config["text"]:
-        if row != '\\':
-            text[a] += row
-        elif row == config["text"][counter - 1] and row == '\\':
+    for letter in config["text"]:
+        if letter != '\\':
+            text[a] += letter
+        elif letter == config["text"][counter - 1] and letter == '\\':
             text[a] = "ᅠ"
             text.append("")
             a += 1
@@ -189,10 +189,10 @@ async def text_and_attachment_modes_choose(choose, text, document):
     document.append("")
     a = 0
     counter = 0
-    for row in config["attachment"]:
-        if row != '\n':
-            document[a] += row
-        elif row == config["attachment"][counter - 1] and row == '\n':
+    for letter in config["attachment"]:
+        if letter != '\n':
+            document[a] += letter
+        elif letter == config["attachment"][counter - 1] and letter == '\n':
             document[a] = ""
         else:
             document.append("")
@@ -250,7 +250,7 @@ async def send_message(message: Message):
         try:
             keyboard = Keyboard(one_time = False)
             await button_modes_choose(int(config["button_mode"]), keyboard, message_counter)
-            await bot.api.messages.send(
+            await message.ctx_api.messages.send(
                 random_id = random.getrandbits(31) * random.choice([-1, 1]),
                 peer_id = message.peer_id,
                 message = text[await random_text(message_counter, int(config["random_text"]), len(text))],
@@ -278,7 +278,7 @@ async def fake_stop(message: Message):
     global message_counter
     if message_counter:
         keyboard = Keyboard(one_time=False)
-        await bot.api.messages.send(
+        await message.ctx_api.messages.send(
             random_id = random.getrandbits(31) * random.choice([-1, 1]),
             peer_id = message.peer_id,
             message = config["mode_4_text"],
@@ -286,13 +286,27 @@ async def fake_stop(message: Message):
         )
         time.sleep(float(config["delay_stop"]))
 
-async def setup_settings():
+async def get_apis_from_config(apies):
+    counter = 0
+    temp_token = ""
+    for api_letter in config["token"]:
+        if api_letter != '\n':
+            temp_token += api_letter
+        elif api_letter == '\n' and config["token"][counter + 1] != '\n':
+            apies.append(API(temp_token))
+            temp_token = ""
+        counter += 1
+    apies.append(API(temp_token))
+
+async def setup_settings(apies):
     global text
     global document
     await text_and_attachment_modes_choose(int(config["text_mode"]), text, document)
+    await get_apis_from_config(apies)
 
 if __name__ == "__main__":
+    apies = []
     setup = asyncio.get_event_loop()
-    setup.run_until_complete(setup_settings())
+    setup.run_until_complete(setup_settings(apies))
     bot.loop_wrapper.auto_reload = True
-    bot.run_forever()
+    run_multibot(bot, apis = apies)
