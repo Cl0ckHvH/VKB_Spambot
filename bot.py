@@ -229,29 +229,30 @@ owner_id_list = owner_id_list_from_confg()
 #################################### Команды для вызова #############################################################
 
 # Берёт команды из конфига
-def commands_from_config(command_list: list = []):
-    for i in config_text:
-        command_list.append("/" + i)
-    return command_list
 
-command_list = commands_from_config()
+command_list = []
+for i in config_text:
+    command_list.append("/" + i)
 
 #################################### Сердце бота ####################################################################
 
 # Проверка на ID в списке локальной настройки
 async def id_checker(message, config_value, id_to_check):
     for i in range(0, len(config_text[message.text[1:]][config_value])):
-        if id_to_check == int(config_text[message.text[1:]][config_value][i]):
-            return True
+        try:
+            if id_to_check == int(config_text[message.text[1:]][config_value][i]):
+                return True
+        except:
+            pass
     return False
 
 # Основной спам механизм
-@bot.on.chat_message(from_id = from_id_list, text = command_list)
+@bot.on.chat_message(text = command_list)
 async def send_message(message: Message):
     message_counter = 0
     text = []
     await text_modes_choose(int(config_text[message.text[1:]]["text_mode"]), text, message)
-    while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id):
+    while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id) or bool(int(config_text[message.text[1:]]["any"])) and await id_checker(message, "group_id", message.group_id):
         try:
             keyboard = Keyboard(one_time = False)
             await button_modes_choose(int(config_text[message.text[1:]]["button_mode"]), keyboard, message_counter, message)
