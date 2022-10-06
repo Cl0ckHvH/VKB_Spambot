@@ -139,11 +139,12 @@ async def button_modes_choose(choose, keyboard, message_counter, message):
 #################################### Текст ##########################################################################
 
 # Режим текста 1 - стандартный режим, спам всем текстом из конфига
-async def standart_text_mode(text, message):
+async def standart_text_mode(message, text: list = []):
     text.append(custom_settings[message.text[1:]]["text"])
+    return text
 
 # Режим текста 2 - режим по строчно, спам по каждой строчки в конфиге
-async def line_by_line_text_mode(text, message):
+async def line_by_line_text_mode(message, text: list = []):
     temp_letter = ""
     counter = 0
     for letter in custom_settings[message.text[1:]]["text"]:
@@ -156,9 +157,10 @@ async def line_by_line_text_mode(text, message):
             temp_letter = ""
         counter += 1
     text.append(temp_letter)
+    return text
 
 # Режим текста 3 - режим обрезки через символ, спам по каждой обрезки из конфига
-async def cut_text_mode(text, message):
+async def cut_text_mode(message, text: list = []):
     temp_letter = ""
     counter = 0
     for letter in custom_settings[message.text[1:]]["text"]:
@@ -171,19 +173,18 @@ async def cut_text_mode(text, message):
             temp_letter = ""
         counter += 1
     text.append(temp_letter)
+    return text
 
 # Выбор режима текста и вложения
-async def text_modes_choose(choose, text, message):
+async def text_modes_choose(choose, message, text: list = []):
     match choose:
         case 2:
-            await line_by_line_text_mode(text, message)
-            return
+            text = await line_by_line_text_mode(message)
         case 3:
-            await cut_text_mode(text, message)
-            return
+            text = await cut_text_mode(message)
         case _:
-            await standart_text_mode(text, message)
-            return
+            text = await standart_text_mode(message)
+    return text
 
 # Режим случайного текста или вложения
 async def random_value(message_counter, choose, len_list):
@@ -250,8 +251,7 @@ async def id_checker(message, config_value, id_to_check):
 @bot.on.chat_message(text = command_list)
 async def send_message(message: Message):
     message_counter = 0
-    text = []
-    await text_modes_choose(int(custom_settings[message.text[1:]]["text_mode"]), text, message)
+    text = await text_modes_choose(int(custom_settings[message.text[1:]]["text_mode"]), message)
     while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id) or bool(int(custom_settings[message.text[1:]]["any"])) and await id_checker(message, "group_id", message.group_id):
         try:
             keyboard = Keyboard(one_time = False)
