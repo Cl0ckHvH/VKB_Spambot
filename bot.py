@@ -23,8 +23,8 @@ with open("config.toml", "r", encoding="utf-8") as f:
     else:
         config = toml.load(f)
 
-with open("config_text.toml", "r", encoding="utf-8") as f:
-    config_text = toml.load(f)
+with open("custom_settings.toml", "r", encoding="utf-8") as f:
+    custom_settings = toml.load(f)
 
 bot=Bot()
 
@@ -49,16 +49,16 @@ async def button_colors_choose(color_choose):
 async def classic_mode(keyboard, message_counter, message):
     for row in range(0, 10):
         button_colors = deque([
-                await button_colors_choose(int(config_text[message.text[1:]]["mode1_button_color1"])),
-                await button_colors_choose(int(config_text[message.text[1:]]["mode1_button_color2"])),
-                await button_colors_choose(int(config_text[message.text[1:]]["mode1_button_color3"])),
-                await button_colors_choose(int(config_text[message.text[1:]]["mode1_button_color4"]))
+                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color1"])),
+                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color2"])),
+                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color3"])),
+                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color4"]))
             ])
         button_text = deque([
-                config_text[message.text[1:]]["mode1_2_3_button_text1"],
-                config_text[message.text[1:]]["mode1_2_3_button_text2"],
-                config_text[message.text[1:]]["mode1_2_3_button_text3"],
-                config_text[message.text[1:]]["mode1_2_3_button_text4"]
+                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
             ])
         button_colors.rotate(message_counter % 4)
         button_text.rotate(message_counter % 4)
@@ -77,10 +77,10 @@ async def rainbow_mode(keyboard, message_counter, message):
                 await button_colors_choose(3)
             ])
         button_text = [
-                config_text[message.text[1:]]["mode1_2_3_button_text1"],
-                config_text[message.text[1:]]["mode1_2_3_button_text2"],
-                config_text[message.text[1:]]["mode1_2_3_button_text3"],
-                config_text[message.text[1:]]["mode1_2_3_button_text4"]
+                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
             ]
         button_colors.rotate((message_counter + row) % 4)
         for button_add in range(0, 4):
@@ -92,10 +92,10 @@ async def rainbow_mode(keyboard, message_counter, message):
 async def virus_mode(keyboard, message):
     for row in range(0, 10):
         button_text = [
-                config_text[message.text[1:]]["mode1_2_3_button_text1"],
-                config_text[message.text[1:]]["mode1_2_3_button_text2"],
-                config_text[message.text[1:]]["mode1_2_3_button_text3"],
-                config_text[message.text[1:]]["mode1_2_3_button_text4"]
+                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
+                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
             ]
         for button_add in range(0, random.randint(1, 4)):
             keyboard.add(Text(button_text[random.randint(0, 3)]), color = await button_colors_choose(random.randint(0, 2)))
@@ -140,16 +140,16 @@ async def button_modes_choose(choose, keyboard, message_counter, message):
 
 # Режим текста 1 - стандартный режим, спам всем текстом из конфига
 async def standart_text_mode(text, message):
-    text.append(config_text[message.text[1:]]["text"])
+    text.append(custom_settings[message.text[1:]]["text"])
 
 # Режим текста 2 - режим по строчно, спам по каждой строчки в конфиге
 async def line_by_line_text_mode(text, message):
     temp_letter = ""
     counter = 0
-    for letter in config_text[message.text[1:]]["text"]:
+    for letter in custom_settings[message.text[1:]]["text"]:
         if letter != '\n':
             temp_letter += letter
-        elif letter == config_text[message.text[1:]]["text"][counter - 1] and letter == '\n':
+        elif letter == custom_settings[message.text[1:]]["text"][counter - 1] and letter == '\n':
             text.append("ᅠ")
         else:
             text.append(temp_letter)
@@ -161,10 +161,10 @@ async def line_by_line_text_mode(text, message):
 async def cut_text_mode(text, message):
     temp_letter = ""
     counter = 0
-    for letter in config_text[message.text[1:]]["text"]:
+    for letter in custom_settings[message.text[1:]]["text"]:
         if letter != '\\':
             temp_letter += letter
-        elif letter == config_text[message.text[1:]]["text"][counter - 1] and letter == '\\':
+        elif letter == custom_settings[message.text[1:]]["text"][counter - 1] and letter == '\\':
             text.append("ᅠ")
         else:
             text.append(temp_letter)
@@ -213,9 +213,9 @@ def num_checker(from_id_list, temp_number):
 
 # Берёт введённые ID из конфига и проверяет на совпадение
 def from_id_list_from_config(from_id_list: list = []):
-    for i in config_text:
-        for number in range(0, len(config_text[i]["call_from_id"])):
-            num_checker(from_id_list, config_text[i]["call_from_id"][number])
+    for i in custom_settings:
+        for number in range(0, len(custom_settings[i]["call_from_id"])):
+            num_checker(from_id_list, custom_settings[i]["call_from_id"][number])
     return from_id_list
 
 from_id_list = from_id_list_from_config()
@@ -231,16 +231,16 @@ owner_id_list = owner_id_list_from_confg()
 # Берёт команды из конфига
 
 command_list = []
-for i in config_text:
+for i in custom_settings:
     command_list.append("/" + i)
 
 #################################### Сердце бота ####################################################################
 
 # Проверка на ID в списке локальной настройки
 async def id_checker(message, config_value, id_to_check):
-    for i in range(0, len(config_text[message.text[1:]][config_value])):
+    for i in range(0, len(custom_settings[message.text[1:]][config_value])):
         try:
-            if id_to_check == int(config_text[message.text[1:]][config_value][i]):
+            if id_to_check == int(custom_settings[message.text[1:]][config_value][i]):
                 return True
         except:
             pass
@@ -251,23 +251,23 @@ async def id_checker(message, config_value, id_to_check):
 async def send_message(message: Message):
     message_counter = 0
     text = []
-    await text_modes_choose(int(config_text[message.text[1:]]["text_mode"]), text, message)
-    while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id) or bool(int(config_text[message.text[1:]]["any"])) and await id_checker(message, "group_id", message.group_id):
+    await text_modes_choose(int(custom_settings[message.text[1:]]["text_mode"]), text, message)
+    while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id) or bool(int(custom_settings[message.text[1:]]["any"])) and await id_checker(message, "group_id", message.group_id):
         try:
             keyboard = Keyboard(one_time = False)
-            await button_modes_choose(int(config_text[message.text[1:]]["button_mode"]), keyboard, message_counter, message)
+            await button_modes_choose(int(custom_settings[message.text[1:]]["button_mode"]), keyboard, message_counter, message)
             await message.ctx_api.messages.send(
                 random_id = random.getrandbits(31) * random.choice([-1, 1]),
                 peer_id = message.peer_id,
-                message = text[await random_value(message_counter, int(config_text[message.text[1:]]["random_text"]), len(text))],
-                attachment = config_text[message.text[1:]]["attachment"][await random_value(message_counter, int(config_text[message.text[1:]]["random_attachment"]), len(config_text[message.text[1:]]["attachment"]))],
+                message = text[await random_value(message_counter, int(custom_settings[message.text[1:]]["random_text"]), len(text))],
+                attachment = custom_settings[message.text[1:]]["attachment"][await random_value(message_counter, int(custom_settings[message.text[1:]]["random_attachment"]), len(custom_settings[message.text[1:]]["attachment"]))],
                 keyboard = keyboard.get_json()
             )
             message_counter += 1
-            if message_counter == int(config_text[message.text[1:]]["message_counter_limit"]):
+            if message_counter == int(custom_settings[message.text[1:]]["message_counter_limit"]):
                 print("Stopped spamming by counter")
                 break
-            await asyncio.sleep(float(config_text[message.text[1:]]["delay"]))
+            await asyncio.sleep(float(custom_settings[message.text[1:]]["delay"]))
         except VKAPIError[7]:
             print("Stopped spamming, reason: bot was kicked from conversation")
             break
@@ -276,7 +276,7 @@ async def send_message(message: Message):
             break
         except VKAPIError as e:
             print("Can't send message, reason: ", e)
-            await asyncio.sleep(float(config_text[message.text[1:]]["delay_kill"]))
+            await asyncio.sleep(float(custom_settings[message.text[1:]]["delay_kill"]))
 
 # Перезапускает бота
 @bot.on.message(from_id = owner_id_list, command = "restart")
