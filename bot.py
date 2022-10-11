@@ -1,30 +1,21 @@
-import asyncio
-import random
-import toml
-import time
 import os
 import sys
-from collections import deque
-from typing import Union
+import toml
+import random
+import asyncio
 
-from vkbottle import API, Keyboard, KeyboardButtonColor, Text
-from vkbottle.bot import Bot, Message, run_multibot
+from typing import Union
+from collections import deque
+
 from vkbottle.dispatch.rules import ABCRule
-from vkbottle.tools.dev.mini_types.base import BaseMessageMin
 from vkbottle.exception_factory import VKAPIError
+from vkbottle.bot import Bot, Message, run_multibot
+from vkbottle import API, Keyboard, KeyboardButtonColor, Text
+from vkbottle.tools.dev.mini_types.base import BaseMessageMin
 
 # Настройка по конфигу
-with open("config.toml", "r", encoding="utf-8") as f:
-    if "token" in os.environ:
-        config = dict(os.environ)
-        for key, value in toml.load(f).items():
-            if key not in config:
-                config[key] = value
-    else:
-        config = toml.load(f)
-
-with open("custom_settings.toml", "r", encoding="utf-8") as f:
-    custom_settings = toml.load(f)
+with open('config.toml', 'r', encoding='utf-8') as f:
+    config = toml.load(f)
 
 bot=Bot()
 
@@ -36,7 +27,7 @@ class FromIdRule(ABCRule[BaseMessageMin]):
     async def check(self, event: BaseMessageMin) -> Union[dict, bool]:
         return event.from_id in self.from_id
 
-bot.labeler.custom_rules["from_id"] = FromIdRule
+bot.labeler.custom_rules['from_id'] = FromIdRule
 
 #################################### Кнопки #########################################################################
 
@@ -46,19 +37,19 @@ async def button_colors_choose(color_choose):
     return button_main_colors[color_choose]
 
 # Режим кнопок 1 - стандартный режим
-async def classic_mode(keyboard, message_counter, message):
+async def classic_mode(keyboard, message_counter, custom_command):
     for row in range(0, 10):
         button_colors = deque([
-                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color1"])),
-                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color2"])),
-                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color3"])),
-                await button_colors_choose(int(custom_settings[message.text[1:]]["mode1_button_color4"]))
+                await button_colors_choose(int(config[custom_command]['mode1_button_color1'])),
+                await button_colors_choose(int(config[custom_command]['mode1_button_color2'])),
+                await button_colors_choose(int(config[custom_command]['mode1_button_color3'])),
+                await button_colors_choose(int(config[custom_command]['mode1_button_color4']))
             ])
         button_text = deque([
-                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
+                config[custom_command]['mode1_2_3_button_text1'],
+                config[custom_command]['mode1_2_3_button_text2'],
+                config[custom_command]['mode1_2_3_button_text3'],
+                config[custom_command]['mode1_2_3_button_text4']
             ])
         button_colors.rotate(message_counter % 4)
         button_text.rotate(message_counter % 4)
@@ -68,7 +59,7 @@ async def classic_mode(keyboard, message_counter, message):
             keyboard.row()
 
 # Режим кнопок 2 - режим радуги
-async def rainbow_mode(keyboard, message_counter, message):
+async def rainbow_mode(keyboard, message_counter, custom_command):
     for row in range(0, 10):
         button_colors = deque([
                 await button_colors_choose(0),
@@ -77,10 +68,10 @@ async def rainbow_mode(keyboard, message_counter, message):
                 await button_colors_choose(3)
             ])
         button_text = [
-                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
+                config[custom_command]['mode1_2_3_button_text1'],
+                config[custom_command]['mode1_2_3_button_text2'],
+                config[custom_command]['mode1_2_3_button_text3'],
+                config[custom_command]['mode1_2_3_button_text4']
             ]
         button_colors.rotate((message_counter + row) % 4)
         for button_add in range(0, 4):
@@ -89,13 +80,13 @@ async def rainbow_mode(keyboard, message_counter, message):
             keyboard.row()
 
 # Режим кнопок 3 - режим вируса
-async def virus_mode(keyboard, message):
+async def virus_mode(keyboard, custom_command):
     for row in range(0, 10):
         button_text = [
-                custom_settings[message.text[1:]]["mode1_2_3_button_text1"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text2"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text3"],
-                custom_settings[message.text[1:]]["mode1_2_3_button_text4"]
+                config[custom_command]['mode1_2_3_button_text1'],
+                config[custom_command]['mode1_2_3_button_text2'],
+                config[custom_command]['mode1_2_3_button_text3'],
+                config[custom_command]['mode1_2_3_button_text4']
             ]
         for button_add in range(0, random.randint(1, 4)):
             keyboard.add(Text(button_text[random.randint(0, 3)]), color = await button_colors_choose(random.randint(0, 2)))
@@ -103,18 +94,18 @@ async def virus_mode(keyboard, message):
             keyboard.row()
 
 # Режим кнопок 4 - режим из бота спарты
-async def sparta_raid_mode(keyboard, message):
+async def sparta_raid_mode(keyboard):
     temp = 1
     rand_temp = random.randint(1, 12)
     for row in range(0, 3):
         button_text = [
-                "bosslike.ru",
-                "olike.ru",
-                "vto.pe"
+                'bosslike.ru',
+                'olike.ru',
+                'vto.pe'
             ]
         for button_add in range(0, 4):
             if temp == rand_temp:
-                keyboard.add(Text("stop"), color=KeyboardButtonColor.POSITIVE)
+                keyboard.add(Text('stop'), color=KeyboardButtonColor.POSITIVE)
             else:
                 keyboard.add(Text(button_text[random.randint(0, 2)]), color=KeyboardButtonColor.NEGATIVE)
             temp += 1
@@ -122,68 +113,67 @@ async def sparta_raid_mode(keyboard, message):
             keyboard.row()
 
 # Выбор режима кнопок
-async def button_modes_choose(choose, keyboard, message_counter, message):
-    match choose:
+async def button_modes_choose(keyboard, message_counter, custom_command):
+    match int(config[custom_command]['button_mode']):
         case 1:
-            await classic_mode(keyboard, message_counter, message)
+            await classic_mode(keyboard, message_counter, custom_command)
         case 2:
-            await rainbow_mode(keyboard, message_counter, message)
+            await rainbow_mode(keyboard, message_counter, custom_command)
         case 3:
-            await virus_mode(keyboard, message)
+            await virus_mode(keyboard, custom_command)
         case 4:
-            await sparta_raid_mode(keyboard, message)
+            await sparta_raid_mode(keyboard)
         case _:
-            print ("Keyboard is off")
-            return
+            print ('Keyboard is off')
 
 #################################### Текст ##########################################################################
 
 # Режим текста 1 - стандартный режим, спам всем текстом из конфига
-async def standart_text_mode(message, text: list = []):
-    text.append(custom_settings[message.text[1:]]["text"])
+async def standart_text_mode(custom_command, text = []):
+    text.append(config[custom_command]['text'])
     return text
 
 # Режим текста 2 - режим по строчно, спам по каждой строчки в конфиге
-async def line_by_line_text_mode(message, text: list = []):
-    temp_letter = ""
+async def line_by_line_text_mode(custom_command, text = []):
+    temp_letter = ''
     counter = 0
-    for letter in custom_settings[message.text[1:]]["text"]:
+    for letter in config[custom_command]['text']:
         if letter != '\n':
             temp_letter += letter
-        elif letter == custom_settings[message.text[1:]]["text"][counter - 1] and letter == '\n':
-            text.append("ᅠ")
+        elif letter == config[custom_command]['text'][counter - 1] and letter == '\n':
+            text.append('ᅠ')
         else:
             text.append(temp_letter)
-            temp_letter = ""
+            temp_letter = ''
         counter += 1
     text.append(temp_letter)
     return text
 
 # Режим текста 3 - режим обрезки через символ, спам по каждой обрезки из конфига
-async def cut_text_mode(message, text: list = []):
-    temp_letter = ""
+async def cut_text_mode(custom_command, text = []):
+    temp_letter = ''
     counter = 0
-    for letter in custom_settings[message.text[1:]]["text"]:
+    for letter in config[custom_command]['text']:
         if letter != '\\':
             temp_letter += letter
-        elif letter == custom_settings[message.text[1:]]["text"][counter - 1] and letter == '\\':
-            text.append("ᅠ")
+        elif letter == config[custom_command]['text'][counter - 1] and letter == '\\':
+            text.append('ᅠ')
         else:
             text.append(temp_letter)
-            temp_letter = ""
+            temp_letter = ''
         counter += 1
     text.append(temp_letter)
     return text
 
 # Выбор режима текста и вложения
-async def text_modes_choose(choose, message, text: list = []):
-    match choose:
+async def text_modes_choose(custom_command):
+    match int(config[custom_command]['text_mode']):
         case 2:
-            text = await line_by_line_text_mode(message)
+            text = await line_by_line_text_mode(custom_command)
         case 3:
-            text = await cut_text_mode(message)
+            text = await cut_text_mode(custom_command)
         case _:
-            text = await standart_text_mode(message)
+            text = await standart_text_mode(custom_command)
     return text
 
 # Режим случайного текста или вложения
@@ -209,21 +199,21 @@ def num_checker(from_id_list, temp_number):
             from_id_list.append(int(temp_number))
         elif counter == len(from_id_list):
             from_id_list.append(int(temp_number))
-    except:
-        pass
+    except: pass
 
 # Берёт введённые ID из конфига и проверяет на совпадение
-def from_id_list_from_config(from_id_list: list = []):
-    for i in custom_settings:
-        for number in range(0, len(custom_settings[i]["call_from_id"])):
-            num_checker(from_id_list, custom_settings[i]["call_from_id"][number])
+def from_id_list_from_config(from_id_list = []):
+    for i in config:
+        if type(config[i]) == dict:
+            for number in range(0, len(config[i]['call_from_id'])):
+                num_checker(from_id_list, config[i]['call_from_id'][number])
     return from_id_list
 
 from_id_list = from_id_list_from_config()
 
-def owner_id_list_from_confg(owner_id_list: list = []):
-    for number in range(0, len(config["owner_id"])):
-        num_checker(owner_id_list, config["owner_id"][number])
+def owner_id_list_from_confg(owner_id_list = []):
+    for number in range(0, len(config['owner_id'])):
+        num_checker(owner_id_list, config['owner_id'][number])
     return owner_id_list
 
 owner_id_list = owner_id_list_from_confg()
@@ -232,62 +222,61 @@ owner_id_list = owner_id_list_from_confg()
 # Берёт команды из конфига
 
 command_list = []
-for i in custom_settings:
-    command_list.append("/" + i)
+for i in config:
+    if type(config[i]) == dict:
+        command_list.append(f"/{i}")
 
 #################################### Сердце бота ####################################################################
 
 # Проверка на ID в списке локальной настройки
-async def id_checker(message, config_value, id_to_check):
-    for i in range(0, len(custom_settings[message.text[1:]][config_value])):
+async def id_checker(custom_command, config_value, id_to_check):
+    for i in range(0, len(config[custom_command][config_value])):
         try:
-            if id_to_check == int(custom_settings[message.text[1:]][config_value][i]):
+            if id_to_check == int(config[custom_command][config_value][i]):
                 return True
-        except:
-            pass
+        except: pass
     return False
 
 # Основной спам механизм
-@bot.on.chat_message(text = command_list)
+@bot.on.message(text = command_list)
 async def send_message(message: Message):
+    custom_command = message.text[1:]
     message_counter = 0
-    text = await text_modes_choose(int(custom_settings[message.text[1:]]["text_mode"]), message)
-    while await id_checker(message, "call_from_id", message.from_id) and await id_checker(message, "group_id", message.group_id) or bool(int(custom_settings[message.text[1:]]["any"])) and await id_checker(message, "group_id", message.group_id):
+    text = await text_modes_choose(custom_command)
+    while await id_checker(custom_command, 'call_from_id', message.from_id) and await id_checker(custom_command, 'group_id', message.group_id) or bool(int(config[custom_command]['any'])) and await id_checker(custom_command, 'group_id', message.group_id):
         try:
             keyboard = Keyboard(one_time = False)
-            await button_modes_choose(int(custom_settings[message.text[1:]]["button_mode"]), keyboard, message_counter, message)
-            await message.ctx_api.messages.send(
-                random_id = random.getrandbits(31) * random.choice([-1, 1]),
-                peer_id = message.peer_id,
-                message = text[await random_value(message_counter, int(custom_settings[message.text[1:]]["random_text"]), len(text))],
-                attachment = custom_settings[message.text[1:]]["attachment"][await random_value(message_counter, int(custom_settings[message.text[1:]]["random_attachment"]), len(custom_settings[message.text[1:]]["attachment"]))],
+            await button_modes_choose(keyboard, message_counter, custom_command)
+            await message.answer(
+                message = text[await random_value(message_counter, int(config[custom_command]['random_text']), len(text))],
+                attachment = config[custom_command]['attachment'][await random_value(message_counter, int(config[custom_command]['random_attachment']), len(config[custom_command]['attachment']))],
                 keyboard = keyboard.get_json()
             )
             message_counter += 1
-            if message_counter == int(custom_settings[message.text[1:]]["message_counter_limit"]):
-                print("Stopped spamming by counter")
+            if message_counter == int(config[custom_command]['message_counter_limit']):
+                print('Stopped spamming by counter')
                 break
-            await asyncio.sleep(float(custom_settings[message.text[1:]]["delay"]))
+            await asyncio.sleep(float(config[custom_command]['delay']))
         except VKAPIError[7]:
-            print("Stopped spamming, reason: bot was kicked from conversation")
+            print('Stopped spamming, reason: bot was kicked from conversation')
             break
         except VKAPIError[945]:
-            print("Stopped spamming, reason: chat was disabled")
+            print('Stopped spamming, reason: chat was disabled')
             break
         except VKAPIError as e:
-            print("Can't send message, reason: ", e)
-            await asyncio.sleep(float(custom_settings[message.text[1:]]["delay_kill"]))
+            print(f"Can't send message, reason:{e}")
+            await asyncio.sleep(float(config[custom_command]['delay_kill']))
 
 # Перезапускает бота
-@bot.on.message(from_id = owner_id_list, command = "restart")
+@bot.on.message(from_id = owner_id_list, command = 'restart')
 async def restart_application(message: Message):
     os.execl(sys.executable, os.path.abspath(__file__), *sys.argv)
 
 #################################### Основная настройка перед запуском ##############################################
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     apies = []
-    for i in range(0, len(config["token"])):
-        apies.append(API(config["token"][i]))
+    for i in range(0, len(config['token'])):
+        apies.append(API(config['token'][i]))
     bot.loop_wrapper.auto_reload = True
     run_multibot(bot, apis = apies)
